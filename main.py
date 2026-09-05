@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from utils.data_manager import DataManager
+from utils.app_state import AppState
 
 
 class ClimateAnalyticsApp(tk.Tk):
@@ -15,16 +16,7 @@ class ClimateAnalyticsApp(tk.Tk):
 
         self.data_manager = DataManager()
 
-        # ==========================================================
-        # APPLICATION STATE
-        # ==========================================================
-
-        self.dataset_loaded = False
-        self.analysis_ready = False
-        self.statistics_ready = False
-        self.trends_ready = False
-        self.visualization_ready = False
-        self.ml_ready = False
+        self.app_state = AppState()
 
         # ==========================================================
         # WINDOW
@@ -972,11 +964,7 @@ class ClimateAnalyticsApp(tk.Tk):
         """Reset analysis results after a new dataset/selection."""
 
         self.data_manager.clear_results()
-
-        self.statistics_ready = False
-        self.trends_ready = False
-        self.visualization_ready = False
-        self.ml_ready = False
+        self.app_state.reset_analysis()
 
     def get_home_statistics(self):
 
@@ -1028,6 +1016,28 @@ class ClimateAnalyticsApp(tk.Tk):
 
         if page_name in navigation:
             navigation[page_name]()
+
+    def mark_analysis_ready(self):
+        """Mark the current data selection as ready for analysis."""
+
+        self.app_state.analysis_ready = True
+        self.update_status("Analysis data is ready.")
+
+
+    def mark_result_ready(self, analysis_type):
+        """Mark an analysis result as completed."""
+
+        if analysis_type == "statistics":
+            self.app_state.statistics_ready = True
+
+        elif analysis_type == "trends":
+            self.app_state.trends_ready = True
+
+        elif analysis_type == "visualization":
+            self.app_state.visualization_ready = True
+
+        elif analysis_type == "ml":
+            self.app_state.ml_ready = True
 
     
 
