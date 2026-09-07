@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+from utils.data_manager import DataManager
 
 def generate_matplotlib_figure(df, graph_type, country_name="Selected Country", 
                                month_filter="All", start_year=1961, end_year=2019, 
@@ -23,9 +23,9 @@ def generate_matplotlib_figure(df, graph_type, country_name="Selected Country",
     data = df.copy()
     
     # Filter by Year Range if Year column exists
-    if 'Year' in data.columns:
-        data['Year'] = pd.to_numeric(data['Year'], errors='coerce')
-        data = data[(data['Year'] >= start_year) & (data['Year'] <= end_year)]
+    if 'YEAR' in data.columns:
+        data['YEAR'] = pd.to_numeric(data['YEAR'], errors='coerce')
+        data = data[(data['YEAR'] >= start_year) & (data['YEAR'] <= end_year)]
 
     # Filter by Month if Months column exists
     if 'Months' in data.columns and month_filter != "All":
@@ -33,15 +33,15 @@ def generate_matplotlib_figure(df, graph_type, country_name="Selected Country",
 
     # Target temperature change column identification
     val_col = None
-    for col in ['Temperature_Change', 'Value', 'Temp_Change', 'Measurement']:
+    for col in ['VALUE']:
         if col in data.columns:
             val_col = col
             break
     if val_col is None:
         # Fallback to first numeric column that isn't Year
         numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
-        if 'Year' in numeric_cols:
-            numeric_cols.remove('Year')
+        if 'YEAR' in numeric_cols:
+            numeric_cols.remove('YEAR')
         val_col = numeric_cols[0] if numeric_cols else None
 
     if val_col is None or data.empty:
@@ -54,18 +54,18 @@ def generate_matplotlib_figure(df, graph_type, country_name="Selected Country",
 
     # 1. Line Chart + 5-Year Moving Average
     if graph_type == "Line Chart (YEAR vs Temp Change)":
-        if 'Year' in data.columns:
-            data = data.sort_values('Year')
-            sns.lineplot(data=data, x='Year', y=val_col, ax=ax, label="Annual Temp Change (°C)", marker='o', color='#1f77b4')
+        if 'YEAR' in data.columns:
+            data = data.sort_values('YEAR')
+            sns.lineplot(data=data, x='YEAR', y=val_col, ax=ax, label="Annual Temp Change (°C)", marker='o', color='#1f77b4')
             
             if show_moving_avg and len(data) >= 5:
                 data['5Yr_MA'] = data[val_col].rolling(window=5, min_periods=1).mean()
-                sns.lineplot(data=data, x='Year', y='5Yr_MA', ax=ax, label="5-Year Moving Avg", color='#ff7f0e', linewidth=2, linestyle='--')
+                sns.lineplot(data=data, x='YEAR', y='5Yr_MA', ax=ax, label="5-Year Moving Avg", color='#ff7f0e', linewidth=2, linestyle='--')
             
             ax.set_ylabel("Temperature Change (°C)")
-            ax.set_xlabel("Year")
+            ax.set_xlabel("YEAR")
         else:
-            ax.text(0.5, 0.5, "Line chart requires 'Year' column", ha='center', va='center')
+            ax.text(0.5, 0.5, "Line chart requires 'YEAR' column", ha='center', va='center')
 
     # 2. Histogram
     elif graph_type == "Histogram":
@@ -80,20 +80,20 @@ def generate_matplotlib_figure(df, graph_type, country_name="Selected Country",
 
     # 4. Scatter Plot
     elif graph_type == "Scatter Plot":
-        if 'Year' in data.columns:
-            sns.scatterplot(data=data, x='Year', y=val_col, ax=ax, color='#d62728', s=60)
+        if 'YEAR' in data.columns:
+            sns.scatterplot(data=data, x='YEAR', y=val_col, ax=ax, color='#d62728', s=60)
             # Add linear trendline overlay
             if len(data) > 1:
-                sns.regplot(data=data, x='Year', y=val_col, ax=ax, scatter=False, color='black', line_kws={'linestyle': ':'})
-            ax.set_xlabel("Year")
+                sns.regplot(data=data, x='YEAR', y=val_col, ax=ax, scatter=False, color='black', line_kws={'linestyle': ':'})
+            ax.set_xlabel("YEAR")
             ax.set_ylabel("Temperature Change (°C)")
         else:
             sns.scatterplot(data=data, x=data.index, y=val_col, ax=ax, color='#d62728')
 
     # 5. Bar Chart (Decadal Averages)
     elif graph_type == "Bar Chart (Decadal Averages)":
-        if 'Year' in data.columns:
-            data['Decade'] = (data['Year'] // 10) * 10
+        if 'YEAR' in data.columns:
+            data['Decade'] = (data['YEAR'] // 10) * 10
             data['Decade_Str'] = data['Decade'].astype(str) + "s"
             decadal_df = data.groupby('Decade_Str')[val_col].mean().reset_index()
             sns.barplot(data=decadal_df, x='Decade_Str', y=val_col, ax=ax, palette="Blues_d")
@@ -101,7 +101,7 @@ def generate_matplotlib_figure(df, graph_type, country_name="Selected Country",
             ax.set_ylabel("Mean Temperature Change (°C)")
             plt.xticks(rotation=0)
         else:
-            ax.text(0.5, 0.5, "Decadal bar chart requires 'Year' column", ha='center', va='center')
+            ax.text(0.5, 0.5, "Decadal bar chart requires 'YEAR' column", ha='center', va='center')
 
     # 6. Seasonal / Month Comparison
     elif graph_type == "Seasonal / Month Comparison":
@@ -230,10 +230,13 @@ class VisualizationPage(ttk.Frame):
         # Resolve Data Source
         df = df_override
         if df is None and self.data_manager is not None:
-            df = getattr(self.data_manager, 'get_processed_data', lambda: None)()
+            if hasattr(self.data_manager, 'get_processed_data'):
+                df = self.data_manager.get_processed_data()
+            else:
+                df = getattr(self.data_manager, 'processed_df', None)
 
         country_name = country_override or "Selected Country"
-        if self.data_manager and hasattr(self.data_manager, 'selected_country'):
+        if self.data_manager and getattr(self.data_manager, 'selected_country', None):
             country_name = self.data_manager.selected_country
 
         # Fetch Form inputs
@@ -294,9 +297,9 @@ if __name__ == "__main__":
             months = np.repeat(["Meteorological Year", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November"], 59)
             
             self.processed_df = pd.DataFrame({
-                "Year": years,
+                "YEAR": years,
                 "Months": months,
-                "Temperature_Change": 0.2 + 0.02 * (years - 1961) + np.random.normal(0, 0.3, len(years))
+                "VALUE": 0.2 + 0.02 * (years - 1961) + np.random.normal(0, 0.3, len(years))
             })
 
         def get_processed_data(self):

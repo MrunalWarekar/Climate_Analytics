@@ -1,4 +1,5 @@
 import tkinter as tk
+from pathlib import Path
 from tkinter import ttk
 
 from utils.data_manager import DataManager
@@ -109,8 +110,6 @@ class ClimateAnalyticsApp(tk.Tk):
     # ==============================================================
 
     def create_sidebar(self):
-
-        # ---------------- TOP ----------------
 
         self.sidebar_top = tk.Frame(
             self.sidebar,
@@ -557,7 +556,6 @@ class ClimateAnalyticsApp(tk.Tk):
     def clear_page(self):
 
         for widget in self.content.winfo_children():
-
             widget.destroy()
 
     def set_page_title(self, title):
@@ -576,8 +574,6 @@ class ClimateAnalyticsApp(tk.Tk):
 
         self.clear_page()
         self.set_page_title("Home")
-
-        # ---------------- WELCOME ----------------
 
         welcome_frame = tk.Frame(
             self.content,
@@ -613,8 +609,6 @@ class ClimateAnalyticsApp(tk.Tk):
             pady=(8, 0)
         )
 
-        # ---------------- GETTING STARTED ----------------
-
         card = tk.Frame(
             self.content,
             bg=self.card_color,
@@ -641,31 +635,11 @@ class ClimateAnalyticsApp(tk.Tk):
         )
 
         steps = [
-            (
-                "1",
-                "Dataset",
-                "Upload and configure the climate dataset."
-            ),
-            (
-                "2",
-                "Statistics",
-                "Perform statistical analysis on the selected data."
-            ),
-            (
-                "3",
-                "Trend Analysis",
-                "Study historical climate trends and patterns."
-            ),
-            (
-                "4",
-                "Visualization",
-                "Explore the data through graphical visualizations."
-            ),
-            (
-                "5",
-                "Machine Learning",
-                "Generate predictions using trained models."
-            ),
+            ("1", "Dataset", "Upload and configure the climate dataset."),
+            ("2", "Statistics", "Perform statistical analysis on the selected data."),
+            ("3", "Trend Analysis", "Study historical climate trends and patterns."),
+            ("4", "Visualization", "Explore the data through graphical visualizations."),
+            ("5", "Machine Learning", "Generate predictions using trained models."),
         ]
 
         for number, title, description in steps:
@@ -725,8 +699,6 @@ class ClimateAnalyticsApp(tk.Tk):
                 anchor="w",
                 pady=(2, 0)
             )
-
-        # ---------------- START BUTTON ----------------
 
         tk.Button(
             card,
@@ -806,9 +778,27 @@ class ClimateAnalyticsApp(tk.Tk):
         self.clear_page()
         self.set_page_title("Visualization")
 
+        if not self.data_manager.has_dataset():
+            dataset_path = Path(__file__).with_name(
+                "Environment_Temperature_change_E_All_Data_NOFLAG.csv"
+            )
+            self.data_manager.load_dataset(str(dataset_path))
+
+        if not self.data_manager.has_processed_data():
+            area = self.data_manager.selected_country or "India"
+            element = self.data_manager.selected_element or "Temperature change"
+            self.data_manager.create_analytical_dataset(
+                area=area,
+                element=element
+            )
+
+        # IMPORTANT:
+        # VisualizationPage expects a DataManager object,
+        # not the ClimateAnalyticsApp object.
+
         page = VisualizationPage(
             self.content,
-            self
+            self.data_manager
         )
 
         page.pack(
