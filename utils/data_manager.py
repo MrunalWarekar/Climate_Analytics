@@ -65,6 +65,55 @@ class DataManager:
         return self.master_df
 
     # =========================================================
+    # VALIDATE DATASET
+    # =========================================================
+
+    def validate_dataset(self):
+        """Validate whether the loaded dataset has the expected structure."""
+
+        if self.master_df is None:
+            raise ValueError("No dataset has been loaded.")
+
+        df = self.master_df
+
+        required_columns = [
+            "Area",
+            "Element"
+        ]
+
+        missing_columns = [
+            column
+            for column in required_columns
+            if column not in df.columns
+        ]
+
+        if missing_columns:
+            return {
+                "valid": False,
+                "message": (
+                    "Missing required columns: "
+                    + ", ".join(missing_columns)
+                )
+            }
+
+        if not self.year_columns:
+            return {
+                "valid": False,
+                "message": "No valid year columns were detected."
+            }
+
+        return {
+            "valid": True,
+            "message": "Dataset structure is valid.",
+            "rows": len(df),
+            "columns": len(df.columns),
+            "areas": len(self.areas),
+            "elements": len(self.elements),
+            "first_year": self.metadata.get("first_year"),
+            "last_year": self.metadata.get("last_year")
+        }
+
+    # =========================================================
     # DETECT DATASET STRUCTURE
     # =========================================================
 

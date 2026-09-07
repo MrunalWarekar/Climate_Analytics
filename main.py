@@ -4,6 +4,12 @@ from tkinter import ttk
 from utils.data_manager import DataManager
 from utils.app_state import AppState
 
+from gui.statistics_page import StatisticsPage
+from gui.trends_page import TrendsPage
+from gui.visualization_page import VisualizationPage
+from gui.ml_page import MLPage
+from gui.dashboard_page import DashboardPage
+
 
 class ClimateAnalyticsApp(tk.Tk):
 
@@ -11,11 +17,10 @@ class ClimateAnalyticsApp(tk.Tk):
         super().__init__()
 
         # ==========================================================
-        # SHARED DATA MANAGER
+        # SHARED DATA
         # ==========================================================
 
         self.data_manager = DataManager()
-
         self.app_state = AppState()
 
         # ==========================================================
@@ -117,8 +122,6 @@ class ClimateAnalyticsApp(tk.Tk):
             pady=(20, 15)
         )
 
-        # Collapse button
-
         self.toggle_button = tk.Button(
             self.sidebar_top,
             text="☰",
@@ -137,8 +140,6 @@ class ClimateAnalyticsApp(tk.Tk):
             side="left",
             padx=15
         )
-
-        # Application title
 
         self.app_title = tk.Label(
             self.sidebar_top,
@@ -252,8 +253,6 @@ class ClimateAnalyticsApp(tk.Tk):
             fill="x"
         )
 
-        # Hover effect
-
         button.bind(
             "<Enter>",
             lambda event: self.nav_hover(button, True)
@@ -263,8 +262,6 @@ class ClimateAnalyticsApp(tk.Tk):
             "<Leave>",
             lambda event: self.nav_hover(button, False)
         )
-
-        # Tooltip
 
         self.create_tooltip(button, name)
 
@@ -324,10 +321,8 @@ class ClimateAnalyticsApp(tk.Tk):
 
             self.sidebar_expanded = False
 
-            # Hide title
             self.app_title.pack_forget()
 
-            # Change navigation buttons to icons
             for icon, name, command in self.nav_items:
 
                 button = self.nav_buttons[name]
@@ -338,7 +333,6 @@ class ClimateAnalyticsApp(tk.Tk):
                     padx=0
                 )
 
-            # Bottom buttons
             for widget in self.bottom_frame.winfo_children():
 
                 widget.config(
@@ -355,13 +349,11 @@ class ClimateAnalyticsApp(tk.Tk):
 
             self.sidebar_expanded = True
 
-            # Show title again
             self.app_title.pack(
                 side="left",
                 padx=5
             )
 
-            # Restore navigation buttons
             for icon, name, command in self.nav_items:
 
                 button = self.nav_buttons[name]
@@ -372,7 +364,6 @@ class ClimateAnalyticsApp(tk.Tk):
                     padx=15
                 )
 
-            # Restore bottom buttons
             bottom_names = [
                 ("⚙", "Settings"),
                 ("?", "Help & About")
@@ -398,10 +389,13 @@ class ClimateAnalyticsApp(tk.Tk):
         if button.cget("text") not in self.get_active_button_text():
 
             if entering:
+
                 button.config(
                     bg=self.sidebar_hover
                 )
+
             else:
+
                 button.config(
                     bg=self.sidebar_active
                     if self.is_active_button(button)
@@ -443,7 +437,10 @@ class ClimateAnalyticsApp(tk.Tk):
         )
 
         if button:
-            return [button.cget("text")]
+
+            return [
+                button.cget("text")
+            ]
 
         return []
 
@@ -499,8 +496,6 @@ class ClimateAnalyticsApp(tk.Tk):
 
     def create_main_area(self):
 
-        # Header
-
         self.header = tk.Frame(
             self.main_area,
             bg=self.bg_color,
@@ -540,10 +535,6 @@ class ClimateAnalyticsApp(tk.Tk):
             pady=(5, 30)
         )
 
-        # ==========================================================
-        # STATUS BAR
-        # ==========================================================
-
         self.status_bar = tk.Label(
             self.main_area,
             text="Ready",
@@ -566,6 +557,7 @@ class ClimateAnalyticsApp(tk.Tk):
     def clear_page(self):
 
         for widget in self.content.winfo_children():
+
             widget.destroy()
 
     def set_page_title(self, title):
@@ -585,7 +577,7 @@ class ClimateAnalyticsApp(tk.Tk):
         self.clear_page()
         self.set_page_title("Home")
 
-        # Welcome section
+        # ---------------- WELCOME ----------------
 
         welcome_frame = tk.Frame(
             self.content,
@@ -594,292 +586,272 @@ class ClimateAnalyticsApp(tk.Tk):
 
         welcome_frame.pack(
             fill="x",
-            pady=(5, 20)
+            pady=(25, 20)
         )
 
-        welcome = tk.Label(
+        tk.Label(
             welcome_frame,
-            text="Climate Analytics Dashboard",
-            font=("Arial", 21, "bold"),
+            text="Climate Analytics System",
+            font=("Arial", 28, "bold"),
             bg=self.bg_color,
             fg=self.text_color
-        )
-
-        welcome.pack(
+        ).pack(
             anchor="w"
         )
 
-        subtitle = tk.Label(
+        tk.Label(
             welcome_frame,
             text=(
-                "Analyze historical temperature data, identify climate trends "
-                "and explore machine learning predictions."
+                "Explore climate data through statistical analysis, "
+                "trend analysis, visualizations and machine learning."
             ),
-            font=("Arial", 11),
+            font=("Arial", 12),
             bg=self.bg_color,
             fg=self.secondary_text
-        )
-
-        subtitle.pack(
-            anchor="w",
-            pady=(5, 0)
-        )
-
-        # ==========================================================
-        # STATISTIC CARDS
-        # ==========================================================
-
-        cards_frame = tk.Frame(
-            self.content,
-            bg=self.bg_color
-        )
-
-        cards_frame.pack(
-            fill="x"
-        )
-
-        cards = [
-            ("🌡", "Average Temperature", "-- °C"),
-            ("↑", "Highest Temperature", "-- °C"),
-            ("↓", "Lowest Temperature", "-- °C"),
-            ("📅", "Years Analysed", "--"),
-        ]
-
-        for icon, title, value in cards:
-
-            self.create_stat_card(
-                cards_frame,
-                icon,
-                title,
-                value
-            )
-
-        # ==========================================================
-        # LOWER SECTION
-        # ==========================================================
-
-        lower_frame = tk.Frame(
-            self.content,
-            bg=self.bg_color
-        )
-
-        lower_frame.pack(
-            fill="both",
-            expand=True,
-            pady=(25, 0)
-        )
-
-        # Quick actions
-
-        quick_frame = tk.Frame(
-            lower_frame,
-            bg=self.card_color,
-            highlightbackground=self.border_color,
-            highlightthickness=1
-        )
-
-        quick_frame.pack(
-            side="left",
-            fill="both",
-            expand=True,
-            padx=(0, 12)
-        )
-
-        tk.Label(
-            quick_frame,
-            text="Quick Actions",
-            font=("Arial", 16, "bold"),
-            bg=self.card_color,
-            fg=self.text_color
         ).pack(
             anchor="w",
-            padx=25,
-            pady=(20, 15)
+            pady=(8, 0)
         )
 
-        actions = [
-            ("Upload Dataset", self.show_dataset),
-            ("View Statistics", self.show_statistics),
-            ("Analyze Trends", self.show_trends),
-            ("Run Machine Learning", self.show_ml),
-        ]
-
-        for text, command in actions:
-
-            button = tk.Button(
-                quick_frame,
-                text=text,
-                command=command,
-                font=("Arial", 10),
-                bg="#F1F5F9",
-                fg=self.text_color,
-                activebackground="#E2E8F0",
-                relief="flat",
-                bd=0,
-                cursor="hand2",
-                padx=15,
-                pady=10
-            )
-
-            button.pack(
-                fill="x",
-                padx=25,
-                pady=4
-            )
-
-        # Recent activity
-
-        activity_frame = tk.Frame(
-            lower_frame,
-            bg=self.card_color,
-            highlightbackground=self.border_color,
-            highlightthickness=1
-        )
-
-        activity_frame.pack(
-            side="right",
-            fill="both",
-            expand=True,
-            padx=(12, 0)
-        )
-
-        tk.Label(
-            activity_frame,
-            text="Recent Activity",
-            font=("Arial", 16, "bold"),
-            bg=self.card_color,
-            fg=self.text_color
-        ).pack(
-            anchor="w",
-            padx=25,
-            pady=(20, 15)
-        )
-
-        activities = [
-            "Application started",
-            "No dataset loaded",
-            "Ready for analysis"
-        ]
-
-        for activity in activities:
-
-            tk.Label(
-                activity_frame,
-                text="•  " + activity,
-                font=("Arial", 10),
-                bg=self.card_color,
-                fg=self.secondary_text
-            ).pack(
-                anchor="w",
-                padx=25,
-                pady=7
-            )
-
-    # ==============================================================
-    # STAT CARD
-    # ==============================================================
-
-    def create_stat_card(
-        self,
-        parent,
-        icon,
-        title,
-        value
-    ):
+        # ---------------- GETTING STARTED ----------------
 
         card = tk.Frame(
-            parent,
+            self.content,
             bg=self.card_color,
             highlightbackground=self.border_color,
             highlightthickness=1
         )
 
         card.pack(
-            side="left",
             fill="both",
             expand=True,
-            padx=6
+            pady=(20, 0)
         )
 
         tk.Label(
             card,
-            text=icon,
-            font=("Arial", 22),
+            text="Getting Started",
+            font=("Arial", 19, "bold"),
             bg=self.card_color,
             fg=self.text_color
         ).pack(
             anchor="w",
-            padx=20,
-            pady=(15, 5)
+            padx=30,
+            pady=(30, 20)
         )
 
-        tk.Label(
-            card,
-            text=title,
-            font=("Arial", 10),
-            bg=self.card_color,
-            fg=self.secondary_text
-        ).pack(
-            anchor="w",
-            padx=20
-        )
+        steps = [
+            (
+                "1",
+                "Dataset",
+                "Upload and configure the climate dataset."
+            ),
+            (
+                "2",
+                "Statistics",
+                "Perform statistical analysis on the selected data."
+            ),
+            (
+                "3",
+                "Trend Analysis",
+                "Study historical climate trends and patterns."
+            ),
+            (
+                "4",
+                "Visualization",
+                "Explore the data through graphical visualizations."
+            ),
+            (
+                "5",
+                "Machine Learning",
+                "Generate predictions using trained models."
+            ),
+        ]
 
-        tk.Label(
+        for number, title, description in steps:
+
+            row = tk.Frame(
+                card,
+                bg=self.card_color
+            )
+
+            row.pack(
+                fill="x",
+                padx=30,
+                pady=8
+            )
+
+            tk.Label(
+                row,
+                text=number,
+                font=("Arial", 12, "bold"),
+                bg=self.sidebar_active,
+                fg="white",
+                width=3,
+                height=1
+            ).pack(
+                side="left",
+                padx=(0, 15)
+            )
+
+            text_frame = tk.Frame(
+                row,
+                bg=self.card_color
+            )
+
+            text_frame.pack(
+                side="left",
+                fill="x",
+                expand=True
+            )
+
+            tk.Label(
+                text_frame,
+                text=title,
+                font=("Arial", 12, "bold"),
+                bg=self.card_color,
+                fg=self.text_color
+            ).pack(
+                anchor="w"
+            )
+
+            tk.Label(
+                text_frame,
+                text=description,
+                font=("Arial", 10),
+                bg=self.card_color,
+                fg=self.secondary_text
+            ).pack(
+                anchor="w",
+                pady=(2, 0)
+            )
+
+        # ---------------- START BUTTON ----------------
+
+        tk.Button(
             card,
-            text=value,
-            font=("Arial", 18, "bold"),
-            bg=self.card_color,
-            fg=self.text_color
+            text="Go to Dataset",
+            command=self.show_dataset,
+            font=("Arial", 11, "bold"),
+            bg=self.sidebar_active,
+            fg="white",
+            activebackground=self.sidebar_hover,
+            activeforeground="white",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=20,
+            pady=10
         ).pack(
             anchor="w",
-            padx=20,
-            pady=(5, 15)
+            padx=30,
+            pady=(25, 30)
         )
 
     # ==============================================================
-    # PLACEHOLDER PAGES
+    # DATASET
     # ==============================================================
 
     def show_dataset(self):
 
         self.show_placeholder(
             "Dataset",
-            "Upload and manage climate datasets."
+            "Upload and configure the climate dataset for analysis."
         )
+
+    # ==============================================================
+    # STATISTICS
+    # ==============================================================
 
     def show_statistics(self):
 
-        self.show_placeholder(
-            "Statistics",
-            "Statistical analysis will appear here."
+        self.clear_page()
+        self.set_page_title("Statistics")
+
+        page = StatisticsPage(
+            self.content,
+            self
         )
+
+        page.pack(
+            fill="both",
+            expand=True
+        )
+
+    # ==============================================================
+    # TREND ANALYSIS
+    # ==============================================================
 
     def show_trends(self):
 
-        self.show_placeholder(
-            "Trend Analysis",
-            "Temperature trend analysis will appear here."
+        self.clear_page()
+        self.set_page_title("Trend Analysis")
+
+        page = TrendsPage(
+            self.content,
+            self
         )
+
+        page.pack(
+            fill="both",
+            expand=True
+        )
+
+    # ==============================================================
+    # VISUALIZATION
+    # ==============================================================
 
     def show_visualization(self):
 
-        self.show_placeholder(
-            "Visualization",
-            "Climate data visualizations will appear here."
+        self.clear_page()
+        self.set_page_title("Visualization")
+
+        page = VisualizationPage(
+            self.content,
+            self
         )
+
+        page.pack(
+            fill="both",
+            expand=True
+        )
+
+    # ==============================================================
+    # MACHINE LEARNING
+    # ==============================================================
 
     def show_ml(self):
 
-        self.show_placeholder(
-            "Machine Learning",
-            "Machine learning and temperature prediction will appear here."
+        self.clear_page()
+        self.set_page_title("Machine Learning")
+
+        page = MLPage(
+            self.content,
+            self
         )
+
+        page.pack(
+            fill="both",
+            expand=True
+        )
+
+    # ==============================================================
+    # DASHBOARD
+    # ==============================================================
 
     def show_dashboard(self):
 
-        self.show_placeholder(
-            "Dashboard",
-            "Detailed climate analytics dashboard will appear here."
+        self.clear_page()
+        self.set_page_title("Dashboard")
+
+        page = DashboardPage(
+            self.content,
+            self
+        )
+
+        page.pack(
+            fill="both",
+            expand=True
         )
 
     # ==============================================================
@@ -943,50 +915,20 @@ class ClimateAnalyticsApp(tk.Tk):
             fg=self.secondary_text
         ).pack()
 
+    # ==============================================================
+    # STATUS
+    # ==============================================================
+
     def update_status(self, message):
-        """Update application status message."""
 
         self.status_bar.config(
             text=message
         )
 
-    def dataset_is_loaded(self):
-        """Check whether a master dataset has been loaded."""
-        return self.data_manager.has_dataset()
-
-
-    def analysis_is_ready(self):
-        """Check whether processed analytical data exists."""
-        return self.data_manager.has_processed_data()
-
-
-    def reset_analysis_state(self):
-        """Reset analysis results after a new dataset/selection."""
-
-        self.data_manager.clear_results()
-        self.app_state.reset_analysis()
-
-    def get_home_statistics(self):
-
-        df = self.data_manager.processed_df
-
-        if df is None or df.empty:
-            return {
-                "average": "--",
-                "highest": "--",
-                "lowest": "--",
-                "years": "--"
-            }
-
-        return {
-            "average": f"{df['VALUE'].mean():.2f}",
-            "highest": f"{df['VALUE'].max():.2f}",
-            "lowest": f"{df['VALUE'].min():.2f}",
-            "years": df["YEAR"].nunique()
-        }
-
     def handle_error(self, message, title="Error"):
+
         from tkinter import messagebox
+
         messagebox.showerror(
             title,
             message
@@ -997,10 +939,31 @@ class ClimateAnalyticsApp(tk.Tk):
         )
 
     def handle_success(self, message):
+
         self.update_status(
             message
         )
 
+    # ==============================================================
+    # DATASET STATE
+    # ==============================================================
+
+    def dataset_is_loaded(self):
+
+        return self.data_manager.has_dataset()
+
+    def analysis_is_ready(self):
+
+        return self.data_manager.has_processed_data()
+
+    def reset_analysis_state(self):
+
+        self.data_manager.clear_results()
+        self.app_state.reset_analysis()
+
+    # ==============================================================
+    # NAVIGATION
+    # ==============================================================
 
     def go_to(self, page_name):
 
@@ -1015,31 +978,39 @@ class ClimateAnalyticsApp(tk.Tk):
         }
 
         if page_name in navigation:
+
             navigation[page_name]()
 
+    # ==============================================================
+    # ANALYSIS STATE
+    # ==============================================================
+
     def mark_analysis_ready(self):
-        """Mark the current data selection as ready for analysis."""
 
         self.app_state.analysis_ready = True
-        self.update_status("Analysis data is ready.")
 
+        self.update_status(
+            "Analysis data is ready."
+        )
 
     def mark_result_ready(self, analysis_type):
-        """Mark an analysis result as completed."""
 
         if analysis_type == "statistics":
+
             self.app_state.statistics_ready = True
 
         elif analysis_type == "trends":
+
             self.app_state.trends_ready = True
 
         elif analysis_type == "visualization":
+
             self.app_state.visualization_ready = True
 
         elif analysis_type == "ml":
+
             self.app_state.ml_ready = True
 
-    
 
 # ==============================================================
 # RUN APPLICATION
