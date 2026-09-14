@@ -1,16 +1,23 @@
-import tkinter as tk
+from gui.base_page import BasePage
 
 
-class StatisticsPage(tk.Frame):
+class StatisticsPage(BasePage):
 
     def __init__(self, parent, app):
 
-        super().__init__(parent)
+        super().__init__(
+            parent,
+            app,
+            "Statistics",
+            "Statistical analysis of the selected climate data."
+        )
 
-        self.app = app
+        self.create_statistics_ui()
 
-        tk.Label(
-            self,
-            text="Statistics",
-            font=("Arial", 24, "bold")
-        ).pack(pady=50)
+    def create_statistics_ui(self):
+
+        card = self.create_card()
+        card.pack(
+            fill="both",
+            expand=True
+        )
