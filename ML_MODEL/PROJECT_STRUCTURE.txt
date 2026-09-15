@@ -1,0 +1,26 @@
+Climate_Temperature_Project/
+│
+├── DataSet.csv
+│
+├── train_model.py              # Yearly model
+├── monthly_training.py         # Monthly model - Ridge Strong
+├── gui.py                      # Final Tkinter GUI
+│
+├── models/
+│   ├── yearly/
+│   │   └── temperature_models.joblib
+│   │
+│   └── monthly/
+│       └── <country>/
+│           └── ridge_strong_monthly_model.pkl
+│
+└── results/
+    ├── yearly/
+    │   └── <country>/
+    │       ├── yearly_predictions.csv
+    │       └── 01_actual_vs_predicted.png
+    │
+    └── monthly/
+        └── <country>/
+            ├── monthly_predictions.csv
+            └── 01_actual_vs_predicted.png
